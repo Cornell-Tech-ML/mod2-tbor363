@@ -45,7 +45,11 @@ def index_to_position(index: Index, strides: Strides) -> int:
 
     """
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError("Need to implement for Task 2.1")
+    pos = 0
+    for i, ind in enumerate(index):
+        pos += ind * strides[i]
+
+    return pos
 
 
 def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
@@ -61,7 +65,23 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
 
     """
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError("Need to implement for Task 2.1")
+    # get contiguous stride
+    # stride = [1]
+    # for size in reversed(shape[:-1]):
+    #     stride.insert(0, stride[0] * size)
+
+    user_shape: UserShape = shape.tolist()
+    stride = strides_from_shape(user_shape)
+    # stride = [1]
+    # offset = 1
+    # for s in reversed(shape):
+    #     stride.append(s * offset)
+    #     offset = s * offset
+    # stride = reversed(stride[:-1])
+
+    for i, s in enumerate(stride):
+        out_index[i] = ordinal // s
+        ordinal = ordinal % s
 
 
 def broadcast_index(
@@ -232,7 +252,17 @@ class TensorData:
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
 
         # TODO: Implement for Task 2.1.
-        raise NotImplementedError("Need to implement for Task 2.1")
+        # permute(1, 0) reorder whatever was dim 1 now dim 0, whatever was dim 0 now dim 1
+        # storage stays the same
+        # shape and stride must be tuples
+        shape = []
+        for dim in order:
+            shape.append(self._shape[dim])
+
+        shape = tuple(self._shape[dim] for dim in order)
+        stride = tuple(self._strides[dim] for dim in order)
+
+        return TensorData(self._storage, shape, stride)
 
     def to_string(self) -> str:
         """Convert to string"""
