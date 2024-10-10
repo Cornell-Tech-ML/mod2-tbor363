@@ -66,18 +66,9 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
     """
     # TODO: Implement for Task 2.1.
     # get contiguous stride
-    # stride = [1]
-    # for size in reversed(shape[:-1]):
-    #     stride.insert(0, stride[0] * size)
 
     user_shape: UserShape = shape.tolist()
     stride = strides_from_shape(user_shape)
-    # stride = [1]
-    # offset = 1
-    # for s in reversed(shape):
-    #     stride.append(s * offset)
-    #     offset = s * offset
-    # stride = reversed(stride[:-1])
 
     for i, s in enumerate(stride):
         out_index[i] = ordinal // s
@@ -104,7 +95,14 @@ def broadcast_index(
 
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    padding = len(big_shape) - len(shape)
+
+    for i, dim in enumerate(shape):
+        big_i = i + padding
+        if dim == 1:
+            out_index[i] = 0
+        else:
+            out_index[i] = big_index[big_i]
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -122,7 +120,48 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
 
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    # check if same length
+    # difference between the 2
+    padding = len(shape1) - len(shape2)
+
+    output: UserShape = []
+    pad_track = 0
+    # shape2 larger than shape1 need to add 1's to shape1
+    if padding < 0:
+        for i2, dim2 in enumerate(shape2):
+            if pad_track < abs(padding):
+                output.append(dim2)
+                pad_track += 1
+            else:
+                i1 = i2 - abs(padding)
+                dim1 = shape1[i1]
+                if dim1 == dim2 or dim2 == 1:
+                    output.append(dim1)
+                elif dim1 == 1:
+                    output.append(dim2)
+                else:
+                    raise IndexingError(
+                        f"Shapes {shape1} and {shape2} are not broadcastable"
+                    )
+    # shape1 is larger than shape2 need to add 1's to shape2
+    # or same size
+    elif padding >= 0:
+        for i1, dim1 in enumerate(shape1):
+            if pad_track < abs(padding):
+                output.append(dim1)
+                pad_track += 1
+            else:
+                i2 = i1 - padding
+                dim2 = shape2[i2]
+                if dim1 == dim2 or dim2 == 1:
+                    output.append(dim1)
+                elif dim1 == 1:
+                    output.append(dim2)
+                else:
+                    raise IndexingError(
+                        f"Shapes {shape1} and {shape2} are not broadcastable"
+                    )
+    return tuple(output)
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
@@ -255,10 +294,6 @@ class TensorData:
         # permute(1, 0) reorder whatever was dim 1 now dim 0, whatever was dim 0 now dim 1
         # storage stays the same
         # shape and stride must be tuples
-        shape = []
-        for dim in order:
-            shape.append(self._shape[dim])
-
         shape = tuple(self._shape[dim] for dim in order)
         stride = tuple(self._strides[dim] for dim in order)
 
