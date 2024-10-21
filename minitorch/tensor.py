@@ -318,23 +318,20 @@ class Tensor:
 
     def __radd__(self, b: TensorLike) -> Tensor:
         b_tensor = self._ensure_tensor(b)
-        return Add.apply(self, b_tensor)
+        # return Add.apply(self, b_tensor)
+        return self.__add__(b_tensor)
 
     def __rmul__(self, b: TensorLike) -> Tensor:
         b_tensor = self._ensure_tensor(b)
-        return Mul.apply(self, b_tensor)
+        # return Mul.apply(self, b_tensor)
+        return self.__mul__(b_tensor)
 
     def all(self, dim: Optional[int] = None) -> Tensor:
-        # if dim is not None:
-        #     # dim_tensor = self._ensure_tensor(dim)
-        #     return All.apply(self, Tensor.make([dim], (1,), backend=self.backend))
-        # else:
-        #     return All.apply(self)
-
-        if dim is None:
-            return All.apply(self)
-        else:
+        if dim is not None:
+            # dim_tensor = self._ensure_tensor(dim)
             return All.apply(self, Tensor.make([dim], (1,), backend=self.backend))
+        else:
+            return All.apply(self)
 
     def is_close(self, b: TensorLike) -> Tensor:
         b_tensor = self._ensure_tensor(b)
@@ -354,36 +351,38 @@ class Tensor:
 
     def sum(self, dim: Optional[int] = None) -> Tensor:
         if dim is not None:
-            dim_tensor = self._ensure_tensor(dim)
-            return Sum.apply(self, dim_tensor)
+            return Sum.apply(self, tensor(dim))
         else:
             # Sum over all dimensions
-            return Sum.apply(self)
+            return self.contiguous().view(int(self.size)).sum(0)
+            # return Sum.apply(self)
 
     def mean(self, dim: Optional[int] = None) -> Tensor:
         if dim is not None:
-            dim_tensor = self._ensure_tensor(dim)
-            total_sum = Sum.apply(self, dim_tensor)
-            return total_sum / self.shape[dim]
+            return self.sum(dim) / int(self.shape[dim])
         else:
-            total_sum = Sum.apply(self)
-            return total_sum / int(self.size)
+            return self.sum() / int(self.size)
 
-    def permute(self, dims: Optional[int] = None) -> Tensor:
-        if dims is not None:
-            dim_tensor = self._ensure_tensor(dims)
-            return Permute.apply(self, dim_tensor)
-        else:
-            # dim_tensor = self._ensure_tensor(0)
-            return Permute.apply(self)
+    # def permute(self, dims: Optional[int] = None) -> Tensor:
+    #     if dims is not None:
+    #         dim_tensor = self._ensure_tensor(dims)
+    #         return Permute.apply(self, tensor(dims))
+    #     else:
+    #         # dim_tensor = self._ensure_tensor(0)
+    #         return Permute.apply(self)
+    def permute(self, *dims: int) -> Tensor:
+        return Permute.apply(self, tensor(list(dims)))
 
-    def view(self, dim: Optional[int] = None) -> Tensor:
-        if dim is not None:
-            dim_tensor = self._ensure_tensor(dim)
-            return View.apply(self, dim_tensor)
-        else:
-            # dim_tensor = self._ensure_tensor(0)
-            return View.apply(self)
+    def view(self, *dims: int) -> Tensor:
+        return View.apply(self, tensor(list(dims)))
+
+    # def view(self, dim: Optional[int] = None) -> Tensor:
+    #     if dim is not None:
+    #         dim_tensor = self._ensure_tensor(dim)
+    #         return View.apply(self, dim_tensor)
+    #     else:
+    #         # dim_tensor = self._ensure_tensor(0)
+    #         return View.apply(self)
 
     def zero_grad_(self):
         self.grad = None

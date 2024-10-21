@@ -7,7 +7,6 @@ from typing_extensions import Protocol
 
 from . import operators
 from .tensor_data import (
-    MAX_DIMS,
     broadcast_index,
     index_to_position,
     shape_broadcast,
@@ -16,7 +15,7 @@ from .tensor_data import (
 
 if TYPE_CHECKING:
     from .tensor import Tensor
-    from .tensor_data import Index, Shape, Storage, Strides
+    from .tensor_data import Shape, Storage, Strides
 
 
 class MapProto(Protocol):
@@ -57,10 +56,12 @@ class TensorBackend:
         that implements map, zip, and reduce higher-order functions.
 
         Args:
+        ----
             ops : tensor operations object see `tensor_ops.py`
 
 
         Returns:
+        -------
             A collection of tensor functions
 
         """
@@ -112,12 +113,14 @@ class SimpleOps(TensorOps):
                     out[i, j] = fn(a[i, 0])
 
         Args:
+        ----
             fn: function from float-to-float to apply.
             a (:class:`TensorData`): tensor to map over
             out (:class:`TensorData`): optional, tensor data to fill in,
                    should broadcast with `a`
 
         Returns:
+        -------
             new tensor data
 
         """
@@ -154,11 +157,13 @@ class SimpleOps(TensorOps):
 
 
         Args:
+        ----
             fn: function from two floats-to-float to apply
             a (:class:`TensorData`): tensor to zip over
             b (:class:`TensorData`): tensor to zip over
 
         Returns:
+        -------
             :class:`TensorData` : new tensor data
 
         """
@@ -193,11 +198,13 @@ class SimpleOps(TensorOps):
 
 
         Args:
+        ----
             fn: function from two floats-to-float to apply
             a (:class:`TensorData`): tensor to reduce over
             dim (int): int of dim to reduce
 
         Returns:
+        -------
             :class:`TensorData` : new tensor
 
         """
@@ -246,9 +253,11 @@ def tensor_map(
       broadcast. (`in_shape` must be smaller than `out_shape`).
 
     Args:
+    ----
         fn: function from float-to-float to apply
 
     Returns:
+    -------
         Tensor map function.
 
     """
@@ -299,9 +308,11 @@ def tensor_zip(
       and `b_shape` broadcast to `out_shape`.
 
     Args:
+    ----
         fn: function mapping two floats to float to apply
 
     Returns:
+    -------
         Tensor zip function.
 
     """
@@ -345,9 +356,11 @@ def tensor_reduce(
        except with `reduce_dim` turned to size `1`
 
     Args:
+    ----
         fn: reduction function mapping two floats to float
 
     Returns:
+    -------
         Tensor reduce function.
 
     """
@@ -362,21 +375,6 @@ def tensor_reduce(
         reduce_dim: int,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        # if reduce_dim == 0:
-        #     print(f"out storage {out}")
-        #     print(f"out shape {out_shape}")
-        #     print(f"a storage {a_storage}")
-        #     print(f"a shape {a_shape}")
-
-        #     # reduce all dims
-        #     print("reduce all ")
-        #     result = a_storage[0]
-        #     for i in range(1, len(a_storage)):
-        #         result = fn(result, a_storage[i])
-        #     out[0] = result
-        #     print(f"actual out {out}")
-        #     print(f"actual out shape {out.shape}")
-        # else:
         # reduce over the input dim
         out_index = np.array([0] * len(out_shape), dtype=np.int32)
         a_index = np.array([0] * len(a_shape), dtype=np.int32)
@@ -388,7 +386,6 @@ def tensor_reduce(
             # Initialize result with the first element along the reduce_dim
             a_index[:] = out_index[:]
             a_index[reduce_dim] = 0
-            # print(f" a index {a_index}")
             result = a_storage[index_to_position(a_index, a_strides)]
 
             # loop through the rest of the values along dimension to be reduced
@@ -402,7 +399,6 @@ def tensor_reduce(
             # Store result in the output tensor
             out_pos = index_to_position(out_index, out_strides)
             out[out_pos] = result
-        # print(result)
 
     return _reduce
 
