@@ -179,22 +179,13 @@ class Sum(Function):
             out = t1.f.add_reduce(t1, dim_int)
         else:
             # sum over all the dimensions
-            out = t1
-            for d in reversed(range(len(t1.shape))):
-                out = out.f.add_reduce(out, d)
-        return out
+            # out = t1
+            # for d in reversed(range(len(t1.shape))):
+            #     out = out.f.add_reduce(out, d)
 
-        # #check if dim is 0 tensor
-        # if dim.item != 0:
-        #     dim_int = int(dim.item())
-        #     ctx.save_for_backward(t1, dim)
-        #     out = t1.f.add_reduce(t1, dim_int)
-        #     # ctx.save_for_backward(out)
-        #     return out
-        # else:
-        #     ctx.save_for_backward(t1)
-        #     out = t1.f.add_reduce(t1, 0)
-        #     return out
+            # flatten to 1D tensro
+            out = t1.f.add_reduce(t1.view(int(t1.size)).contiguous(), 0)
+        return out
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tensor:

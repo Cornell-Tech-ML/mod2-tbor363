@@ -362,12 +362,21 @@ def tensor_reduce(
         reduce_dim: int,
     ) -> None:
         # TODO: Implement for Task 2.3.
-        # print(out_shape)
-        # print(a_shape)
-        # print(out)
-        # print(a_storage)
+        # if reduce_dim == 0:
+        #     print(f"out storage {out}")
+        #     print(f"out shape {out_shape}")
+        #     print(f"a storage {a_storage}")
+        #     print(f"a shape {a_shape}")
 
-        # print(reduce_dim)
+        #     # reduce all dims
+        #     print("reduce all ")
+        #     result = a_storage[0]
+        #     for i in range(1, len(a_storage)):
+        #         result = fn(result, a_storage[i])
+        #     out[0] = result
+        #     print(f"actual out {out}")
+        #     print(f"actual out shape {out.shape}")
+        # else:
         # reduce over the input dim
         out_index = np.array([0] * len(out_shape), dtype=np.int32)
         a_index = np.array([0] * len(a_shape), dtype=np.int32)
@@ -393,7 +402,7 @@ def tensor_reduce(
             # Store result in the output tensor
             out_pos = index_to_position(out_index, out_strides)
             out[out_pos] = result
-            # print(result)
+        # print(result)
 
     return _reduce
 
