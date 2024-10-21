@@ -46,8 +46,8 @@ def index_to_position(index: Index, strides: Strides) -> int:
     """
     # TODO: Implement for Task 2.1.
     pos = 0
-    for i, ind in enumerate(index):
-        pos += ind * strides[i]
+    for i, stride in zip(index, strides):
+        pos += i * stride
 
     return pos
 
@@ -244,6 +244,7 @@ class TensorData:
 
         # Check for errors
         if aindex.shape[0] != len(self.shape):
+            print(f"aindex {aindex.shape}")
             raise IndexingError(f"Index {aindex} must be size of {self.shape}.")
         for i, ind in enumerate(aindex):
             if ind >= self.shape[i]:
