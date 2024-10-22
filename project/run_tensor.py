@@ -5,13 +5,56 @@ Be sure you have minitorch installed in you Virtual Env.
 
 import minitorch
 
+
 # Use this function to make a random parameter in
 # your module.
 def RParam(*shape):
     r = 2 * (minitorch.rand(shape) - 0.5)
     return minitorch.Parameter(r)
 
+
 # TODO: Implement for Task 2.5.
+
+
+class Network(minitorch.Module):
+    def __init__(self, hidden_layers: int):
+        super().__init__()
+        self.layer1 = Linear(2, hidden_layers)
+        self.layer2 = Linear(hidden_layers, hidden_layers)
+        self.layer3 = Linear(hidden_layers, 1)
+
+    def forward(self, x: minitorch.Tensor) -> minitorch.Tensor:
+        middle = self.layer1.forward(x).relu()
+        middle = self.layer2.forward(middle).relu()
+        out = self.layer3.forward(middle).sigmoid()
+        return out
+
+
+class Linear(minitorch.Module):
+    def __init__(self, in_size, out_size):
+        super().__init__()
+        self.weights = RParam(in_size, out_size)  # Weight parameter
+        self.bias = RParam(out_size)  # Bias parameter
+        self.out_size = out_size
+
+    def forward(self, x):
+        # weights_reshape = self.w.value.view(1, *self.w.value.shape)
+        # weighted_x = inputs.view(*inputs.shape, 1) * weights_reshape
+        # summed_x = weighted_x.sum(1)
+        # output = summed_x.view(inputs.shape[0], self.out_size) + self.b.value.view(
+        #     1, *self.b.value.shape
+        # )
+        # return output
+        dim0 = x.shape[0]
+        dim1 = x.shape[1]
+        assert dim1 == self.weights.value.shape[0]
+        dim2 = self.weights.value.shape[1]
+
+        x = x.view(dim0, dim1, 1)
+        w = self.weights.value.view(1, dim1, dim2)
+        b = self.bias.value
+        return (x * w).sum(1).view(dim0, dim2) + b
+
 
 def default_log_fn(epoch, total_loss, correct, losses):
     print("Epoch ", epoch, " loss ", total_loss, "correct", correct)

@@ -157,7 +157,7 @@ def is_close(x: float, y: float) -> bool:
 
     """
     # $f(x) = |x - y| < 1e-2$
-    return abs(x - y) < 1e-2
+    return (x - y < 1e-2) and (y - x < 1e-2)
 
 
 def sigmoid(x: float) -> float:
@@ -192,6 +192,9 @@ def relu(x: float) -> float:
     return x if x > 0.0 else 0.0
 
 
+EPS = 1e-6
+
+
 def log(x: float) -> float:
     """Calculats the natural logarithm.
 
@@ -202,7 +205,7 @@ def log(x: float) -> float:
       ln(x).
 
     """
-    return math.log(x)
+    return math.log(x + EPS)
 
 
 def exp(x: float) -> float:
@@ -248,10 +251,7 @@ def log_back(x: float, y: float) -> float:
       d(log(x)*y)/dx.
 
     """
-    if x != 0.0:
-        return y / x
-    else:
-        return 0.0
+    return y / (x + EPS)
 
 
 def inv_back(x: float, y: float) -> float:
@@ -267,7 +267,7 @@ def inv_back(x: float, y: float) -> float:
       d(1/x*y)/dx.
 
     """
-    return -y / (x**2)
+    return -(1.0 / x**2) * y
 
 
 def relu_back(x: float, y: float) -> float:

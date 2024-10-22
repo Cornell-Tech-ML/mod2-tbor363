@@ -128,48 +128,70 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
 
     """
     # TODO: Implement for Task 2.2.
-    # check if same length
-    # difference between the 2
-    padding = len(shape1) - len(shape2)
+    # Start from the rightmost dimension and work backwards
+    result_shape = []
+    len1, len2 = len(shape1), len(shape2)
+    max_len = max(len1, len2)
 
-    output: UserShape = []
-    pad_track = 0
-    # shape2 larger than shape1 need to add 1's to shape1
-    if padding < 0:
-        for i2, dim2 in enumerate(shape2):
-            if pad_track < abs(padding):
-                output.append(dim2)
-                pad_track += 1
-            else:
-                i1 = i2 - abs(padding)
-                dim1 = shape1[i1]
-                if dim1 == dim2 or dim2 == 1:
-                    output.append(dim1)
-                elif dim1 == 1:
-                    output.append(dim2)
-                else:
-                    raise IndexingError(
-                        f"Shapes {shape1} and {shape2} are not broadcastable"
-                    )
-    # shape1 is larger than shape2 need to add 1's to shape2
-    # or same size
-    elif padding >= 0:
-        for i1, dim1 in enumerate(shape1):
-            if pad_track < abs(padding):
-                output.append(dim1)
-                pad_track += 1
-            else:
-                i2 = i1 - padding
-                dim2 = shape2[i2]
-                if dim1 == dim2 or dim2 == 1:
-                    output.append(dim1)
-                elif dim1 == 1:
-                    output.append(dim2)
-                else:
-                    raise IndexingError(
-                        f"Shapes {shape1} and {shape2} are not broadcastable"
-                    )
-    return tuple(output)
+    # Loop from the back of both shapes
+    for i in range(1, max_len + 1):
+        dim1 = shape1[-i] if i <= len1 else 1
+        dim2 = shape2[-i] if i <= len2 else 1
+
+        if dim1 == 1:
+            result_shape.append(dim2)
+        elif dim2 == 1:
+            result_shape.append(dim1)
+        elif dim1 == dim2:
+            result_shape.append(dim1)
+        else:
+            raise IndexingError(f"Cannot broadcast shapes {shape1} and {shape2}")
+
+    # Reverse to match the correct order
+    return tuple(reversed(result_shape))
+
+    # # check if same length
+    # # difference between the 2
+    # padding = len(shape1) - len(shape2)
+
+    # output: UserShape = []
+    # pad_track = 0
+    # # shape2 larger than shape1 need to add 1's to shape1
+    # if padding < 0:
+    #     for i2, dim2 in enumerate(shape2):
+    #         if pad_track < abs(padding):
+    #             output.append(dim2)
+    #             pad_track += 1
+    #         else:
+    #             i1 = i2 - abs(padding)
+    #             dim1 = shape1[i1]
+    #             if dim1 == dim2 or dim2 == 1:
+    #                 output.append(dim1)
+    #             elif dim1 == 1:
+    #                 output.append(dim2)
+    #             else:
+    #                 raise IndexingError(
+    #                     f"Shapes {shape1} and {shape2} are not broadcastable"
+    #                 )
+    # # shape1 is larger than shape2 need to add 1's to shape2
+    # # or same size
+    # elif padding >= 0:
+    #     for i1, dim1 in enumerate(shape1):
+    #         if pad_track < abs(padding):
+    #             output.append(dim1)
+    #             pad_track += 1
+    #         else:
+    #             i2 = i1 - padding
+    #             dim2 = shape2[i2]
+    #             if dim1 == dim2 or dim2 == 1:
+    #                 output.append(dim1)
+    #             elif dim1 == 1:
+    #                 output.append(dim2)
+    #             else:
+    #                 raise IndexingError(
+    #                     f"Shapes {shape1} and {shape2} are not broadcastable"
+    #                 )
+    # return tuple(output)
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
