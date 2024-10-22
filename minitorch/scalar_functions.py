@@ -38,6 +38,18 @@ class ScalarFunction:
 
     @classmethod
     def apply(cls, *vals: ScalarLike) -> Scalar:
+        """Applies a sclar function to input values and returns the result.
+
+        Args:
+        ----
+        cls: the class representing the function to apply.
+        *vals: input values to apply the function to.
+
+        Returns:
+        -------
+        A new Scalar object resulting from the application of the function.
+
+        """
         raw_vals = []
         scalars = []
         for v in vals:
@@ -66,10 +78,35 @@ class Add(ScalarFunction):
 
     @staticmethod
     def forward(ctx: Context, a: float, b: float) -> float:
+        """Performs the forward pass of the addition function.
+
+        Args:
+        ----
+            ctx: context object to store any values for backward pass.
+            a: the first input to the addition function.
+            b: the second input to the addition function.
+
+        Returns:
+        -------
+            The result of the addition $a + b$.
+
+        """
         return a + b
 
     @staticmethod
     def backward(ctx: Context, d_output: float) -> Tuple[float, ...]:
+        """Performs the backward pass of the addition function.
+
+        Args:
+        ----
+            ctx: the context object containing saved values from the forward pass.
+            d_output: the gradient of the output with respect to the final objective.
+
+        Returns:
+        -------
+            A tuple containing the gradients with respect to both inputs.
+
+        """
         return d_output, d_output
 
 
@@ -78,11 +115,35 @@ class Log(ScalarFunction):
 
     @staticmethod
     def forward(ctx: Context, a: float) -> float:
+        """Performs the forward pass of the log function.
+
+        Args:
+        ----
+            ctx: context object to store any values for backward pass.
+            a: the input value to the log function.
+
+        Returns:
+        -------
+            The result of the log function $log(a)$.
+
+        """
         ctx.save_for_backward(a)
         return operators.log(a)
 
     @staticmethod
     def backward(ctx: Context, d_output: float) -> float:
+        """Performs the backward pass of the log function.
+
+        Args:
+        ----
+            ctx: context object containing saved values from the forward pass.
+            d_output: the gradient of the output with respect to the final objective.
+
+        Returns:
+        -------
+            A tuple containing the gradients with respect to both inputs.
+
+        """
         (a,) = ctx.saved_values
         return operators.log_back(a, d_output)
 
@@ -93,11 +154,36 @@ class Mul(ScalarFunction):
 
     @staticmethod
     def forward(ctx: Context, a: float, b: float) -> float:
+        """Performs the forward pass of the multiplication function.
+
+        Args:
+        ----
+            ctx: context object to store any values for backward pass.
+            a: the first input value to the multiplication function.
+            b: the second input value to the multiplication function.
+
+        Returns:
+        -------
+            The result of the multiplication $a * b$.
+
+        """
         ctx.save_for_backward(a, b)
         return a + b
 
     @staticmethod
     def backward(ctx: Context, d_output: float) -> Tuple[float, float]:
+        """Performs the backward pass of the multiplication function.
+
+        Args:
+        ----
+            ctx: context object containing saved values fromm the forward pass.
+            d_output: the gradient of the output with respect to the final objective.
+
+        Returns:
+        -------
+            A tuple containing the gradients with respect to both inputs.
+
+        """
         a, b = ctx.saved_values
         return b * d_output, a * d_output
 
@@ -107,11 +193,35 @@ class Inv(ScalarFunction):
 
     @staticmethod
     def forward(ctx: Context, a: float) -> float:
+        """Performs the forward pass of the inverse function.
+
+        Args:
+        ----
+            ctx: context object to store any values for the backward pass.
+            a: the input value to the inverse function.
+
+        Returns:
+        -------
+            The result of the inverse function $1/a$.
+
+        """
         ctx.save_for_backward(a)
         return operators.inv(a)
 
     @staticmethod
     def backward(ctx: Context, d_output: float) -> float:
+        """Performs the backward pass of the inverse function.
+
+        Args:
+        ----
+            ctx: context object containing saved values from the forward pass.
+            d_output: the gradient of the output with respect to the final objective.
+
+        Returns:
+        -------
+            A tuple containing the gradients with respect to both inputs.
+
+        """
         (a,) = ctx.saved_values
         return operators.inv_back(a, d_output)
 
@@ -121,10 +231,34 @@ class Neg(ScalarFunction):
 
     @staticmethod
     def forward(ctx: Context, a: float) -> float:
+        """Performs the forward pass of the negation function.
+
+        Args:
+        ----
+            ctx: context object to store any values for the backward pass.
+            a: the input value to the negation function.
+
+        Returns:
+        -------
+            The result of the negation function $-a$.
+
+        """
         return -a
 
     @staticmethod
     def backward(ctx: Context, d_output: float) -> float:
+        """Performs the backward pass of the negation function.
+
+        Args:
+        ----
+            ctx: context object containing saved values from the forward pass.
+            d_output: the gradient of the output with respect to the final objective.
+
+        Returns:
+        -------
+            A tuple containing the gradients with respect to the input.
+
+        """
         return -d_output
 
 
