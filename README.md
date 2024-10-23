@@ -532,9 +532,9 @@ number of epochs = 1000
 
 time per epoch = 0.230s
 
-![plot](training_pics/split.png)
+![plot](training_pics/xor.png)
 
-![plot](training_pics/split_loss.png)
+![plot](training_pics/xor_loss.png)
 
 Training log
 
