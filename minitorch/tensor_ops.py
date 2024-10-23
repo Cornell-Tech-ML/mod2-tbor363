@@ -297,7 +297,12 @@ def tensor_map(
             broadcast_index(out_index, out_shape, in_shape, in_index)
             # convert input index to ordinal for in shape
             in_ordinal = index_to_position(in_index, in_strides)
-            out[out_ordinal] = fn(in_storage[in_ordinal])
+            # out[out_ordinal] = fn(in_storage[in_ordinal])
+
+            # EDIT
+            index = index_to_position(out_index, out_strides)
+
+            out[index] = fn(in_storage[in_ordinal])
 
     return _map
 
@@ -357,7 +362,11 @@ def tensor_zip(
             # convert input index to ordinal for in shape
             a_ordinal = index_to_position(a_index, a_strides)
             b_ordinal = index_to_position(b_index, b_strides)
-            out[out_ordinal] = fn(a_storage[a_ordinal], b_storage[b_ordinal])
+            # out[out_ordinal] = fn(a_storage[a_ordinal], b_storage[b_ordinal])
+
+            # EDIT
+            index = index_to_position(out_index, out_strides)
+            out[index] = fn(a_storage[a_ordinal], b_storage[b_ordinal])
 
     return _zip
 
@@ -391,29 +400,45 @@ def tensor_reduce(
     ) -> None:
         # TODO: Implement for Task 2.3.
         # reduce over the input dim
-        out_index = np.array([0] * len(out_shape), dtype=np.int32)
-        a_index = np.array([0] * len(a_shape), dtype=np.int32)
 
-        for out_ordinal in range(len(out)):
-            # get index of the output
-            to_index(out_ordinal, out_shape, out_index)
+        # EDIT
+        out_index = np.zeros(len(a_shape), dtype=int)
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            index = index_to_position(out_index, out_strides)
 
-            # Initialize result with the first element along the reduce_dim
-            a_index[:] = out_index[:]
-            a_index[reduce_dim] = 0
-            result = a_storage[index_to_position(a_index, a_strides)]
+            for j in range(a_shape[reduce_dim]):
+                a_index = out_index.copy()
+                a_index[reduce_dim] = j
 
-            # loop through the rest of the values along dimension to be reduced
-            for i in range(
-                1, a_shape[reduce_dim]
-            ):  # Start from 1 since 0 is initialized
-                a_index[reduce_dim] = i
-                a_ordinal = index_to_position(a_index, a_strides)
-                result = fn(result, a_storage[a_ordinal])
+                out[index] = fn(
+                    a_storage[index_to_position(a_index, a_strides)], out[index]
+                )
 
-            # Store result in the output tensor
-            out_pos = index_to_position(out_index, out_strides)
-            out[out_pos] = result
+        # out_index = np.array([0] * len(out_shape), dtype=np.int32)
+        # a_index = np.array([0] * len(a_shape), dtype=np.int32)
+
+        # for out_ordinal in range(len(out)):
+        #     # get index of the output
+        #     to_index(out_ordinal, out_shape, out_index)
+
+        #     # Initialize result with the first element along the reduce_dim
+        #     a_index[:] = out_index[:]
+        #     a_index[reduce_dim] = 0
+        #     result = a_storage[index_to_position(a_index, a_strides)]
+        #     # result = start
+
+        #     # loop through the rest of the values along dimension to be reduced
+        #     for i in range(
+        #         1, a_shape[reduce_dim]
+        #     ):  # Start from 1 since 0 is initialized
+        #         a_index[reduce_dim] = i
+        #         a_ordinal = index_to_position(a_index, a_strides)
+        #         result = fn(result, a_storage[a_ordinal])
+
+        #     # Store result in the output tensor
+        #     out_pos = index_to_position(out_index, out_strides)
+        #     out[out_pos] = result
 
     return _reduce
 

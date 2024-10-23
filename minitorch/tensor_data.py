@@ -70,7 +70,8 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
     # TODO: Implement for Task 2.1.
     # get contiguous stride
 
-    user_shape: UserShape = shape.tolist()
+    # user_shape: UserShape = shape.tolist()
+    user_shape = list(shape)
     stride = strides_from_shape(user_shape)
 
     for i, s in enumerate(stride):
@@ -128,27 +129,52 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
 
     """
     # TODO: Implement for Task 2.2.
-    # Start from the rightmost dimension and work backwards
-    result_shape = []
+
     len1, len2 = len(shape1), len(shape2)
     max_len = max(len1, len2)
 
-    # Loop from the back of both shapes
-    for i in range(1, max_len + 1):
-        dim1 = shape1[-i] if i <= len1 else 1
-        dim2 = shape2[-i] if i <= len2 else 1
+    # Pad the smaller shape with 1s
+    padded_shape1 = (1,) * (max_len - len1) + tuple(shape1)
+    padded_shape2 = (1,) * (max_len - len2) + tuple(shape2)
+
+    result_shape = [0] * max_len  # Preallocate result shape for efficiency
+
+    # Loop once through the padded shapes and fill result_shape
+    for i in range(max_len):
+        dim1, dim2 = padded_shape1[i], padded_shape2[i]
 
         if dim1 == 1:
-            result_shape.append(dim2)
+            result_shape[i] = dim2
         elif dim2 == 1:
-            result_shape.append(dim1)
+            result_shape[i] = dim1
         elif dim1 == dim2:
-            result_shape.append(dim1)
+            result_shape[i] = dim1
         else:
             raise IndexingError(f"Cannot broadcast shapes {shape1} and {shape2}")
 
-    # Reverse to match the correct order
-    return tuple(reversed(result_shape))
+    return tuple(result_shape)
+
+    # Start from the rightmost dimension and work backwards
+    # result_shape = []
+    # len1, len2 = len(shape1), len(shape2)
+    # max_len = max(len1, len2)
+
+    # # Loop from the back of both shapes
+    # for i in range(1, max_len + 1):
+    #     dim1 = shape1[-i] if i <= len1 else 1
+    #     dim2 = shape2[-i] if i <= len2 else 1
+
+    #     if dim1 == 1:
+    #         result_shape.append(dim2)
+    #     elif dim2 == 1:
+    #         result_shape.append(dim1)
+    #     elif dim1 == dim2:
+    #         result_shape.append(dim1)
+    #     else:
+    #         raise IndexingError(f"Cannot broadcast shapes {shape1} and {shape2}")
+
+    # # Reverse to match the correct order
+    # return tuple(reversed(result_shape))
 
     # # check if same length
     # # difference between the 2
