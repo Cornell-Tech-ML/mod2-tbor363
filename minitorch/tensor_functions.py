@@ -214,10 +214,10 @@ class Mul(Function):
 
         """
         (t1, t2) = ctx.saved_values
-        # return t2 * grad_output, t1 * grad_output
-        grad_t1 = grad_output.f.mul_zip(t2, grad_output)
-        grad_t2 = grad_output.f.mul_zip(t1, grad_output)
-        return grad_t1, grad_t2
+        return t2 * grad_output, t1 * grad_output
+        # grad_t1 = grad_output.f.mul_zip(t2, grad_output)
+        # grad_t2 = grad_output.f.mul_zip(t1, grad_output)
+        # return grad_t1, grad_t2
 
 
 class Sigmoid(Function):
@@ -235,11 +235,11 @@ class Sigmoid(Function):
             The result of the sigmoid function $sigmoid(a)$.
 
         """
-        # out = t1.f.sigmoid_map(t1)
-        # ctx.save_for_backward(out)
-        # return out
-        ctx.save_for_backward(t1)
-        return t1.f.sigmoid_map(t1)
+        out = t1.f.sigmoid_map(t1)
+        ctx.save_for_backward(out)
+        return out
+        # ctx.save_for_backward(t1)
+        # return t1.f.sigmoid_map(t1)
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tensor:
@@ -255,27 +255,13 @@ class Sigmoid(Function):
             The gradient with respect to the input.
 
         """
-        # sigma: Tensor = ctx.saved_values[0]
-        # # one: Tensor = Tensor()
+        sigma: Tensor = ctx.saved_values[0]
+        # one: Tensor = Tensor()
 
-        # data = [1.0] * int(operators.prod(sigma.shape))
-        # ones = minitorch.Tensor.make(data, sigma.shape, backend=sigma.backend)
-        # # sigma * (ones - sigma) * grad_output
-        # # return sigma * (ones - sigma) * grad_output
-        # one_minus_sig = sigma.f.add_zip(sigma.f.neg_map(sigma), ones)
-        # return grad_output.f.mul_zip(sigma, one_minus_sig)
-        (a,) = ctx.saved_values
-        return grad_output.f.add_zip(
-            grad_output.f.mul_zip(grad_output, grad_output.f.sigmoid_map(a)),
-            grad_output.f.neg_map(
-                grad_output.f.mul_zip(
-                    grad_output,
-                    grad_output.f.mul_zip(
-                        grad_output.f.sigmoid_map(a), grad_output.f.sigmoid_map(a)
-                    ),
-                )
-            ),
-        )
+        data = [1.0] * int(operators.prod(sigma.shape))
+        ones = minitorch.Tensor.make(data, sigma.shape, backend=sigma.backend)
+        # sigma * (ones - sigma) * grad_output
+        return sigma * (ones - sigma) * grad_output
 
 
 class ReLU(Function):
@@ -384,7 +370,8 @@ class Exp(Function):
 
         """
         out: Tensor = ctx.saved_values[0]
-        return grad_output.f.mul_zip(grad_output, out)
+        return out * grad_output
+        # return grad_output.f.mul_zip(grad_output, out)
         # return grad_output.f.mul_zip(out.f.exp_map(out), grad_output)
 
 
@@ -431,8 +418,9 @@ class Sum(Function):
         data = [1.0] * int(operators.prod(input.shape))
         one = minitorch.Tensor.make(data, input.shape, backend=input.backend)
         # Multiply ones by grad_output_reshaped to broadcast the gradient
-        grad_input = grad_output_reshaped.f.mul_zip(grad_output_reshaped, one)
-        return grad_input, grad_output.zeros()
+        # grad_input = grad_output_reshaped.f.mul_zip(grad_output_reshaped, one)
+        return grad_output_reshaped * one, grad_output.zeros()
+        # return grad_input, grad_output.zeros()
 
 
 class LT(Function):

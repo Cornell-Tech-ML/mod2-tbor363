@@ -38,13 +38,6 @@ class Linear(minitorch.Module):
         self.out_size = out_size
 
     def forward(self, x):
-        # weights_reshape = self.w.value.view(1, *self.w.value.shape)
-        # weighted_x = inputs.view(*inputs.shape, 1) * weights_reshape
-        # summed_x = weighted_x.sum(1)
-        # output = summed_x.view(inputs.shape[0], self.out_size) + self.b.value.view(
-        #     1, *self.b.value.shape
-        # )
-        # return output
         dim0 = x.shape[0]
         dim1 = x.shape[1]
         assert dim1 == self.weights.value.shape[0]
