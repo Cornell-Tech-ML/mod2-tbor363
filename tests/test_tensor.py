@@ -154,7 +154,7 @@ def test_back_view(t1: Tensor) -> None:
 
     def view(a: Tensor) -> Tensor:
         a = a.contiguous()
-        return a.view(a.size)
+        return a.view(int(a.size))
 
     grad_check(view, t1)
 
